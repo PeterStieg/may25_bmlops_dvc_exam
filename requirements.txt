@@ -1,0 +1,16 @@
+# MLOps and pipeline management
+dvc[s3]==3.62.0     # Data version control and pipeline orchestration
+dagshub==0.6.3      # DagsHub platform integration and remote storage
+mlflow==3.3.0       # Experiment tracking and model management
+
+# Data processing and machine learning
+pandas==2.3.1       # Data manipulation and CSV processing
+scikit-learn==1.7.1 # ML algorithms (RandomForest, preprocessing, metrics)
+joblib==1.5.1       # Model serialization and persistence
+
+# Visualization
+matplotlib==3.10.5  # Basic plotting for confusion matrix and charts
+seaborn==0.13.2     # Statistical visualizations and enhanced plots
+
+# Configuration management
+PyYAML==6.0.2       # YAML configuration file parsing (params.yaml)
