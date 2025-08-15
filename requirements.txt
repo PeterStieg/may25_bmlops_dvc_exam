@@ -1,7 +1,7 @@
 # MLOps and pipeline management
 dvc[s3]==3.62.0     # Data version control and pipeline orchestration
 dagshub==0.6.3      # DagsHub platform integration and remote storage
-mlflow==3.3.0       # Experiment tracking and model management
+mlflow==2.22.1      # Experiment tracking and model management
 
 # Data processing and machine learning
 pandas==2.3.1       # Data manipulation and CSV processing
