@@ -1,0 +1,4 @@
+[core]
+    remote = origin
+['remote "origin"']
+    url = https://dagshub.com/PeterStieg/may25_bmlops_dvc_exam.dvc
