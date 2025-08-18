@@ -1,4 +1,3 @@
-# src/train.py
 import pandas as pd
 import yaml
 from sklearn.ensemble import RandomForestClassifier
@@ -17,10 +16,14 @@ def train_model():
     
     # Load training data
     train_data = pd.read_csv(train_params['train_data'])
-    target_col = train_data.columns[-1]  # Assume last column is target
+    target_col = train_params['target_column']
+    print(f"Using target column: {target_col}")
     
     X_train = train_data.drop(columns=[target_col])
     y_train = train_data[target_col]
+    
+    print(f"Training data shape: {X_train.shape}")
+    print(f"Target distribution: {y_train.value_counts().to_dict()}")
     
     # Create model
     model = RandomForestClassifier(
@@ -45,7 +48,9 @@ def train_model():
     train_metrics = {
         "train_accuracy": float(train_accuracy),
         "cv_mean": float(cv_scores.mean()),
-        "cv_std": float(cv_scores.std())
+        "cv_std": float(cv_scores.std()),
+        "n_estimators": train_params['n_estimators'],
+        "max_depth": train_params['max_depth']
     }
     
     os.makedirs('reports/metrics', exist_ok=True)

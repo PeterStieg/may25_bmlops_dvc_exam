@@ -1,4 +1,3 @@
-# src/normalize.py
 import pandas as pd
 import yaml
 import joblib
@@ -17,8 +16,9 @@ def normalize_data():
     train_data = pd.read_csv(norm_params['input_train'])
     test_data = pd.read_csv(norm_params['input_test'])
     
-    # Get target column (assume last column)
-    target_col = train_data.columns[-1]
+    # Use centralized target column
+    target_col = norm_params['target_column']
+    print(f"Using target column: {target_col}")
     
     # Separate features and target
     X_train = train_data.drop(columns=[target_col])
@@ -71,3 +71,4 @@ def normalize_data():
 
 if __name__ == "__main__":
     normalize_data()
+    

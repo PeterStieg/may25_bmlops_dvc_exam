@@ -1,4 +1,3 @@
-# src/evaluate.py
 import pandas as pd
 import yaml
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
@@ -18,10 +17,14 @@ def evaluate_model():
     
     # Load test data
     test_data = pd.read_csv(eval_params['test_data'])
-    target_col = test_data.columns[-1]  # Assume last column is target
+    target_col = eval_params['target_column']
+    print(f"Using target column: {target_col}")
     
     X_test = test_data.drop(columns=[target_col])
     y_test = test_data[target_col]
+    
+    print(f"Test data shape: {X_test.shape}")
+    print(f"Test target distribution: {y_test.value_counts().to_dict()}")
     
     # Load model
     model = joblib.load(eval_params['model_path'])
@@ -35,10 +38,11 @@ def evaluate_model():
     
     # Save metrics
     metrics = {
-        "accuracy": float(accuracy),
+        "test_accuracy": float(accuracy),
         "precision": float(report['macro avg']['precision']),
         "recall": float(report['macro avg']['recall']),
-        "f1_score": float(report['macro avg']['f1-score'])
+        "f1_score": float(report['macro avg']['f1-score']),
+        "target_column": target_col
     }
     
     os.makedirs('reports/metrics', exist_ok=True)
@@ -52,10 +56,11 @@ def evaluate_model():
     cm = confusion_matrix(y_test, y_pred)
     plt.figure(figsize=(8, 6))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-    plt.title('Confusion Matrix')
+    plt.title(f'Confusion Matrix - {target_col}')
     plt.ylabel('True Label')
     plt.xlabel('Predicted Label')
-    plt.savefig('reports/plots/confusion_matrix.png')
+    plt.tight_layout()
+    plt.savefig('reports/plots/confusion_matrix.png', dpi=150, bbox_inches='tight')
     plt.close()
     
     # Feature importance
@@ -63,16 +68,15 @@ def evaluate_model():
         importance_df = pd.DataFrame({
             'feature': X_test.columns,
             'importance': model.feature_importances_
-        }).sort_values('importance', ascending=False)
+        }).sort_values('importance', ascending=False).head(15)
         
-        plt.figure(figsize=(10, 6))
-        plt.bar(range(len(importance_df)), importance_df['importance'])
-        plt.title('Feature Importance')
-        plt.xlabel('Features')
-        plt.ylabel('Importance')
-        plt.xticks(range(len(importance_df)), importance_df['feature'], rotation=45)
+        plt.figure(figsize=(10, 8))
+        plt.barh(range(len(importance_df)), importance_df['importance'])
+        plt.yticks(range(len(importance_df)), importance_df['feature'])
+        plt.title(f'Top 15 Feature Importance - {target_col}')
+        plt.xlabel('Importance')
         plt.tight_layout()
-        plt.savefig('reports/plots/feature_importance.png')
+        plt.savefig('reports/plots/feature_importance.png', dpi=150, bbox_inches='tight')
         plt.close()
     
     print(f"Evaluation complete!")
@@ -81,3 +85,4 @@ def evaluate_model():
 
 if __name__ == "__main__":
     evaluate_model()
+    

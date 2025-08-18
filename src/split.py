@@ -1,4 +1,3 @@
-# src/split.py
 import pandas as pd
 import yaml
 from sklearn.model_selection import train_test_split
@@ -16,11 +15,12 @@ def split_data():
     data = pd.read_csv(split_params['input'])
     print(f"Loaded data shape: {data.shape}")
     
-    # Identify target column (use the last column if 'target' doesn't exist)
+    # Use centralized target column
     target_col = split_params['target_column']
+    print(f"Using target column: {target_col}")
+    
     if target_col not in data.columns:
-        target_col = data.columns[-1]  # Use last column as target
-        print(f"Target column '{split_params['target_column']}' not found. Using '{target_col}'")
+        raise ValueError(f"Target column '{target_col}' not found in data. Available columns: {list(data.columns)}")
     
     # Separate features and target
     X = data.drop(columns=[target_col])
@@ -47,6 +47,8 @@ def split_data():
     
     print(f"Train set: {len(train_data)} samples")
     print(f"Test set: {len(test_data)} samples")
+    print(f"Target distribution in train: {y_train.value_counts().to_dict()}")
 
 if __name__ == "__main__":
     split_data()
+    
