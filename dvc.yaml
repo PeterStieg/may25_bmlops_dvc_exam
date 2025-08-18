@@ -1,0 +1,65 @@
+# dvc.yaml - Pipeline definition with parameter tracking
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+      - src/prepare.py
+      - data/raw/data.csv
+    params:
+      - prepare    # DVC tracks the entire 'prepare' section in params.yaml
+    outs:
+      - data/processed/data.csv
+
+  split:
+    cmd: python src/split.py
+    deps:
+      - src/split.py
+      - data/processed/data.csv
+    params:
+      - data_split        # Tracks parameters including centralized random_seed
+      - project_config    # Tracks changes to global configuration
+    outs:
+      - data/splits/train.csv
+      - data/splits/test.csv
+
+  normalize:
+    cmd: python src/normalize.py
+    deps:
+      - src/normalize.py
+      - data/splits/train.csv
+      - data/splits/test.csv
+    params:
+      - normalize    # Tracks normalization method and file paths
+    outs:
+      - data/normalized/train_normalized.csv
+      - data/normalized/test_normalized.csv
+      - models/scaler.pkl
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/normalized/train_normalized.csv
+    params:
+      - train           # Tracks model hyperparameters and random seed
+      - project_config  # Ensures consistency when global config changes
+    outs:
+      - models/model.pkl
+    metrics:
+      - reports/metrics/train_metrics.json:
+          cache: false
+
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+      - src/evaluate.py
+      - models/model.pkl
+      - data/normalized/test_normalized.csv
+    params:
+      - evaluate    # Tracks evaluation configuration
+    metrics:
+      - reports/metrics/metrics.json:
+          cache: false
+    plots:
+      - reports/plots/:
+          cache: false

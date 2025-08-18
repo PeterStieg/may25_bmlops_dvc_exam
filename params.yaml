@@ -1,0 +1,54 @@
+# params.yaml - Advanced centralization using YAML anchors
+# Define global configuration values that will be reused throughout the pipeline
+project_config:
+  random_seed: &random_seed 42        # Central random seed for reproducibility
+  data_version: &data_version "v1.0"  # Version tracking for datasets
+
+# Centralize commonly used file paths to avoid repetition and reduce errors
+paths:
+  raw_data: &raw_data data/raw/data.csv
+  processed_data: &processed_data data/processed/data.csv
+  train_split: &train_split data/splits/train.csv
+  test_split: &test_split data/splits/test.csv
+  train_normalized: &train_normalized data/normalized/train_normalized.csv
+  test_normalized: &test_normalized data/normalized/test_normalized.csv
+  model_file: &model_file models/model.pkl
+  scaler_file: &scaler_file models/scaler.pkl
+
+# Data preparation stage configuration
+prepare:
+  input: *raw_data      # Reference to centralized path
+  output: *processed_data
+
+# Data splitting stage configuration  
+data_split:
+  input: *processed_data
+  target_column: "target"  # Adjust this to match your dataset's target column
+  test_size: 0.2          # Reserve 20% for testing
+  validation_size: 0.1    # Reserve 10% for validation (if needed)
+  random_state: *random_seed  # Use centralized random seed
+
+# Data normalization stage configuration
+normalize:
+  input_train: *train_split
+  input_test: *test_split
+  output_train: *train_normalized
+  output_test: *test_normalized
+  method: "standard"  # Options: standard, minmax, robust
+  scaler_output: *scaler_file
+
+# Model training stage configuration
+train:
+  train_data: *train_normalized
+  model_output: *model_file
+  model_type: "random_forest"
+  n_estimators: 100
+  max_depth: 10
+  random_state: *random_seed  # Consistent randomness across pipeline
+
+# Model evaluation stage configuration
+evaluate:
+  test_data: *test_normalized
+  model_path: *model_file
+  metrics_output: reports/metrics/metrics.json
+  plots_output: reports/plots/
