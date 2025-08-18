@@ -1,8 +1,9 @@
-# params.yaml - Advanced centralization using YAML anchors
+# params.yaml - Advanced centralization with target column management
 # Define global configuration values that will be reused throughout the pipeline
 project_config:
   random_seed: &random_seed 42        # Central random seed for reproducibility
   data_version: &data_version "v1.0"  # Version tracking for datasets
+  target_column: &target_column "silica_concentrate"  # Target variable for ML task
 
 # Centralize commonly used file paths to avoid repetition and reduce errors
 paths:
@@ -23,10 +24,10 @@ prepare:
 # Data splitting stage configuration  
 data_split:
   input: *processed_data
-  target_column: "target"  # Adjust this to match your dataset's target column
-  test_size: 0.2          # Reserve 20% for testing
-  validation_size: 0.1    # Reserve 10% for validation (if needed)
-  random_state: *random_seed  # Use centralized random seed
+  target_column: *target_column  # Use centralized target column
+  test_size: 0.2                 # Reserve 20% for testing
+  validation_size: 0.1           # Reserve 10% for validation (if needed)
+  random_state: *random_seed     # Use centralized random seed
 
 # Data normalization stage configuration
 normalize:
@@ -34,21 +35,24 @@ normalize:
   input_test: *test_split
   output_train: *train_normalized
   output_test: *test_normalized
-  method: "standard"  # Options: standard, minmax, robust
+  target_column: *target_column  # Needed for feature/target separation
+  method: "standard"             # Options: standard, minmax, robust
   scaler_output: *scaler_file
 
 # Model training stage configuration
 train:
   train_data: *train_normalized
+  target_column: *target_column   # Consistent target identification
   model_output: *model_file
   model_type: "random_forest"
   n_estimators: 100
   max_depth: 10
-  random_state: *random_seed  # Consistent randomness across pipeline
+  random_state: *random_seed      # Consistent randomness across pipeline
 
 # Model evaluation stage configuration
 evaluate:
   test_data: *test_normalized
+  target_column: *target_column   # Consistent target identification
   model_path: *model_file
   metrics_output: reports/metrics/metrics.json
   plots_output: reports/plots/
