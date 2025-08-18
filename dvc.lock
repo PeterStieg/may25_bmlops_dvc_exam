@@ -1,0 +1,160 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - path: data/raw/data.csv
+      hash: md5
+      md5: 5e5e07ff28ed18e3f35618c4e9fc668c
+      size: 332534
+    - path: src/prepare.py
+      hash: md5
+      md5: a7a7adae946745dd3c1938eb208b29fb
+      size: 1310
+    params:
+      params.yaml:
+        prepare:
+          input: data/raw/data.csv
+          output: data/processed/data.csv
+    outs:
+    - path: data/processed/data.csv
+      hash: md5
+      md5: 5e5e07ff28ed18e3f35618c4e9fc668c
+      size: 332534
+  split:
+    cmd: python src/split.py
+    deps:
+    - path: data/processed/data.csv
+      hash: md5
+      md5: 5e5e07ff28ed18e3f35618c4e9fc668c
+      size: 332534
+    - path: src/split.py
+      hash: md5
+      md5: c8367c3dba93a8131c1ef218e832d4b4
+      size: 1832
+    params:
+      params.yaml:
+        data_split:
+          input: data/processed/data.csv
+          target_column: silica_concentrate
+          test_size: 0.2
+          validation_size: 0.1
+          random_state: 42
+        project_config:
+          random_seed: 42
+          data_version: v1.0
+          target_column: silica_concentrate
+    outs:
+    - path: data/splits/test.csv
+      hash: md5
+      md5: a4099b7abb68bcf71d19377c16fe0651
+      size: 66719
+    - path: data/splits/train.csv
+      hash: md5
+      md5: bae62811030f95882d330d28b74e985f
+      size: 265868
+  normalize:
+    cmd: python src/normalize.py
+    deps:
+    - path: data/splits/test.csv
+      hash: md5
+      md5: a4099b7abb68bcf71d19377c16fe0651
+      size: 66719
+    - path: data/splits/train.csv
+      hash: md5
+      md5: bae62811030f95882d330d28b74e985f
+      size: 265868
+    - path: src/normalize.py
+      hash: md5
+      md5: f679bcbf27e9f7781bb2b5d687898ea6
+      size: 6019
+    params:
+      params.yaml:
+        normalize:
+          input_train: data/splits/train.csv
+          input_test: data/splits/test.csv
+          output_train: data/normalized/train_normalized.csv
+          output_test: data/normalized/test_normalized.csv
+          target_column: silica_concentrate
+          method: standard
+          scaler_output: models/scaler.pkl
+    outs:
+    - path: data/normalized/test_normalized.csv
+      hash: md5
+      md5: d0d44a51c89b52b4bbfb1c74d1947ac0
+      size: 63843
+    - path: data/normalized/train_normalized.csv
+      hash: md5
+      md5: 29cc6fd57c6d10e893e6effbb9fc6945
+      size: 254897
+    - path: models/scaler.pkl
+      hash: md5
+      md5: 76b56ef27de6895f4e58180cec7980da
+      size: 1175
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/normalized/train_normalized.csv
+      hash: md5
+      md5: 29cc6fd57c6d10e893e6effbb9fc6945
+      size: 254897
+    - path: src/train.py
+      hash: md5
+      md5: 0ce70dba051df8ec104be32674c9ba21
+      size: 3243
+    params:
+      params.yaml:
+        project_config:
+          random_seed: 42
+          data_version: v1.0
+          target_column: silica_concentrate
+        train:
+          train_data: data/normalized/train_normalized.csv
+          target_column: silica_concentrate
+          model_output: models/model.pkl
+          model_type: random_forest
+          n_estimators: 100
+          max_depth: 10
+          random_state: 42
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: adf283423e4299794f4c0838d447177f
+      size: 3925617
+    - path: reports/metrics/train_metrics.json
+      hash: md5
+      md5: 04b3aeff08b8b72032bb4c455fa4815f
+      size: 344
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+    - path: data/normalized/test_normalized.csv
+      hash: md5
+      md5: d0d44a51c89b52b4bbfb1c74d1947ac0
+      size: 63843
+    - path: models/model.pkl
+      hash: md5
+      md5: adf283423e4299794f4c0838d447177f
+      size: 3925617
+    - path: src/evaluate.py
+      hash: md5
+      md5: 42f15f203914c3c3442e65569d17476b
+      size: 3080
+    params:
+      params.yaml:
+        evaluate:
+          test_data: data/normalized/test_normalized.csv
+          target_column: silica_concentrate
+          model_path: models/model.pkl
+          metrics_output: reports/metrics/metrics.json
+          plots_output: reports/plots/
+    outs:
+    - path: reports/metrics/metrics.json
+      hash: md5
+      md5: 2bebbde722cc66eba292265fc68f57c3
+      size: 151
+    - path: reports/plots/
+      hash: md5
+      md5: 1a243d187fa7276e1df6fb0eee1bd093.dir
+      size: 126952
+      nfiles: 2

@@ -8,19 +8,23 @@ def load_params():
         return yaml.safe_load(f)
 
 def split_data():
+
+    # Print this file's name in bold formatting using ASCII
+    print("\n\033[1m### 2. src/split.py ###\033[0m\n")
+
     params = load_params()
     split_params = params['data_split']
     
     # Load processed data
     data = pd.read_csv(split_params['input'])
-    print(f"Loaded data shape: {data.shape}")
+    print(f"\tLoaded data shape: {data.shape}")
     
     # Use centralized target column
     target_col = split_params['target_column']
-    print(f"Using target column: {target_col}")
+    print(f"\tUsing target column: {target_col}")
     
     if target_col not in data.columns:
-        raise ValueError(f"Target column '{target_col}' not found in data. Available columns: {list(data.columns)}")
+        raise ValueError(f"\tTarget column '{target_col}' not found in data. Available columns: {list(data.columns)}")
     
     # Separate features and target
     X = data.drop(columns=[target_col])
@@ -44,11 +48,10 @@ def split_data():
     # Save splits
     train_data.to_csv('data/splits/train.csv', index=False)
     test_data.to_csv('data/splits/test.csv', index=False)
-    
-    print(f"Train set: {len(train_data)} samples")
-    print(f"Test set: {len(test_data)} samples")
-    print(f"Target distribution in train: {y_train.value_counts().to_dict()}")
+
+    print(f"\tTrain set: {len(train_data):,} samples")
+    print(f"\tTest set: {len(test_data):,} samples")
+    #print(f"\tTarget distribution in train: {y_train.value_counts().to_dict()}")
 
 if __name__ == "__main__":
     split_data()
-    
